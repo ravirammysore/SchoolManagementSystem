@@ -1,34 +1,26 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
-namespace SchoolAPIGateway
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddOcelot();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-           var result = Host.CreateDefaultBuilder(args)
-               .ConfigureWebHostDefaults(webBuilder =>
-               {
-                   webBuilder.UseStartup<Startup>();
-               }).ConfigureAppConfiguration((HostingContext, config) => {
-                   config.SetBasePath(HostingContext.HostingEnvironment.ContentRootPath)
-                   .AddJsonFile("Ocelot.json", optional: false, reloadOnChange: true);
-               });
-
-            return result;
-        }           
-
-    }
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseOcelot();
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
